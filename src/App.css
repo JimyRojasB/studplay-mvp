@@ -17,6 +17,16 @@
   }
 }
 
+/* Ocultar barra de scroll pero mantener funcionalidad */
+.scroll-hidden {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scroll-hidden::-webkit-scrollbar {
+  display: none;
+}
+
 .hero {
   position: relative;
 
