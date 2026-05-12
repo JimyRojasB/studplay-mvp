@@ -200,7 +200,7 @@ export default function LoginScreen({ onLogin }) {
 
         {/* Info adicional */}
         <motion.div variants={itemVariants} className="text-center mt-6 text-xs text-slate-500">
-          <p>© 2024 StudPlay. Todos los derechos reservados.</p>
+          <p>© 2026 StudPlay. Todos los derechos reservados.</p>
         </motion.div>
       </motion.div>
     </div>
