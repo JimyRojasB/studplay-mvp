@@ -2,13 +2,59 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
 import MascotaAndre3D from './components/MascotaAndre3D'
 import LoginScreen from './screens/LoginScreen'
-import logoStudplay from './assets/logo.png' 
+import BrainPlanner from './components/BrainPlanner'
+import ProcrastinationRadar from './components/ProcrastinationRadar'
+import AdaptiveQuizEngine from './components/AdaptiveQuizEngine'
+import { fechaEnDias, diasDesde, proximoExamen } from './utils/studyMetrics'
+import logoStudplay from './assets/logo.png'
+
+const LAST_ACTIVE_KEY = 'studplay_last_active'
+const PHONE_KEY = 'studplay_whatsapp'
 
 export default function StudplayProfessionalMVP() {
 
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [user, setUser] = useState(null)
   const [pantallaActual, setPantallaActual] = useState(0)
+  const [quizTab, setQuizTab] = useState('diario')
+
+  // Estado de progreso (XP, cursos, actividad) que alimenta los módulos de IA
+  const [xp, setXp] = useState(1250)
+  const [cursos] = useState(() => [
+    { id: 'mat', nombre: 'Matemática', emoji: '📘', progreso: 80, color: 'from-cyan-400 to-blue-500', fechaExamen: fechaEnDias(4), temasDebiles: ['Derivadas', 'Límites'] },
+    { id: 'fis', nombre: 'Física', emoji: '⚡', progreso: 65, color: 'from-purple-500 to-pink-500', fechaExamen: fechaEnDias(20), temasDebiles: ['Cinemática'] },
+    { id: 'prog', nombre: 'Programación', emoji: '💻', progreso: 92, color: 'from-green-400 to-emerald-500', fechaExamen: fechaEnDias(12), temasDebiles: ['Recursividad'] },
+  ])
+  const [ultimaActividad, setUltimaActividad] = useState(() =>
+    typeof window === 'undefined'
+      ? fechaEnDias(-3)
+      : localStorage.getItem(LAST_ACTIVE_KEY) || fechaEnDias(-3)
+  )
+
+  const [telefono, setTelefonoState] = useState(() =>
+    typeof window === 'undefined' ? '' : localStorage.getItem(PHONE_KEY) || ''
+  )
+  const guardarTelefono = (numero) => {
+    setTelefonoState(numero)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(PHONE_KEY, numero)
+    }
+  }
+
+  const diasSinActividad = diasDesde(ultimaActividad)
+  const cursoProximoExamen = proximoExamen(cursos)
+  const diasProximoExamen = cursoProximoExamen ? cursoProximoExamen.diasRestantes : null
+  const rachaRota = diasSinActividad > 1
+
+  // Suma XP y registra al usuario como activo hoy (rompe el score de riesgo)
+  const ganarXp = (cantidad) => {
+    setXp((prev) => prev + cantidad)
+    const hoy = fechaEnDias(0)
+    setUltimaActividad(hoy)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(LAST_ACTIVE_KEY, hoy)
+    }
+  }
 
   // Manejar login
   const handleLogin = (userData) => {
@@ -29,6 +75,27 @@ export default function StudplayProfessionalMVP() {
       titulo: 'Dashboard',
       contenido: (
         <div className="flex flex-col gap-3 sm:gap-4">
+
+          {/* Brain Planner IA */}
+          <BrainPlanner
+            cursos={cursos}
+            diasSinActividad={diasSinActividad}
+            diasProximoExamen={diasProximoExamen}
+            cursoProximoExamen={cursoProximoExamen}
+            onEarnXp={ganarXp}
+          />
+
+          {/* Radar Anti-Procrastinación IA */}
+          <ProcrastinationRadar
+            cursos={cursos}
+            diasSinActividad={diasSinActividad}
+            diasProximoExamen={diasProximoExamen}
+            cursoProximoExamen={cursoProximoExamen}
+            rachaRota={rachaRota}
+            onEarnXp={ganarXp}
+            telefono={telefono}
+            onGuardarTelefono={guardarTelefono}
+          />
 
           {/* Mascota 3D */}
           <div className="relative h-48 sm:h-60 md:h-72 flex items-center justify-center overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-cyan-500/10 to-purple-600/10 border border-white/10 backdrop-blur-xl">
@@ -53,7 +120,7 @@ export default function StudplayProfessionalMVP() {
             {/* XP */}
             <div className="absolute top-3 sm:top-6 right-3 sm:right-6 bg-black/40 px-3 sm:px-4 py-1 sm:py-2 rounded-lg sm:rounded-2xl border border-white/10 backdrop-blur-xl z-20">
               <span className="text-yellow-400 font-black text-xs sm:text-sm">
-                1250 XP
+                {xp} XP
               </span>
             </div>
 
@@ -121,37 +188,21 @@ export default function StudplayProfessionalMVP() {
             </h3>
           </motion.button>
 
-          {[
-            {
-              n: '📘 Matemática',
-              p: '80%',
-              c: 'from-cyan-400 to-blue-500'
-            },
-            {
-              n: '⚡ Física',
-              p: '65%',
-              c: 'from-purple-500 to-pink-500'
-            },
-            {
-              n: '💻 Programación',
-              p: '92%',
-              c: 'from-green-400 to-emerald-500'
-            }
-          ].map((curso, i) => (
+          {cursos.map((curso) => (
 
             <motion.div
-              key={i}
+              key={curso.id}
               whileHover={{ scale: 1.03 }}
               className="bg-slate-900/70 border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-4 backdrop-blur-xl"
             >
 
               <div className="flex justify-between mb-2 flex-wrap gap-2">
                 <h3 className="font-bold text-xs sm:text-base">
-                  {curso.n}
+                  {curso.emoji} {curso.nombre}
                 </h3>
 
                 <span className="text-cyan-400 font-black text-xs sm:text-sm">
-                  {curso.p}
+                  {curso.progreso}%
                 </span>
               </div>
 
@@ -159,9 +210,9 @@ export default function StudplayProfessionalMVP() {
 
                 <motion.div
                   initial={{ width: 0 }}
-                  animate={{ width: curso.p }}
+                  animate={{ width: `${curso.progreso}%` }}
                   transition={{ duration: 1 }}
-                  className={`h-full bg-gradient-to-r ${curso.c}`}
+                  className={`h-full bg-gradient-to-r ${curso.color}`}
                 />
 
               </div>
@@ -177,44 +228,76 @@ export default function StudplayProfessionalMVP() {
     {
       titulo: 'Quiz Diario',
       contenido: (
-        <div className="bg-gradient-to-br from-cyan-500/10 to-blue-600/10 border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 backdrop-blur-xl">
+        <div className="flex flex-col gap-3 sm:gap-4">
 
-          <div className="flex justify-between items-center mb-4 sm:mb-6">
-
-            <span className="bg-orange-500 px-3 py-1 rounded-full text-[10px] sm:text-xs font-black shadow-lg">
-              +15 XP
-            </span>
-
-            <span className="text-slate-400 text-xs sm:text-sm font-bold">
-              1/3
-            </span>
-
+          {/* Tabs Quiz Diario / Quiz IA */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setQuizTab('diario')}
+              className={`flex-1 py-2 rounded-xl text-[11px] sm:text-xs font-black transition-all ${
+                quizTab === 'diario'
+                  ? 'bg-cyan-500/30 text-cyan-300 border border-cyan-400/50'
+                  : 'bg-white/5 text-slate-400 border border-white/10'
+              }`}
+            >
+              Quiz Diario
+            </button>
+            <button
+              onClick={() => setQuizTab('ia')}
+              className={`flex-1 py-2 rounded-xl text-[11px] sm:text-xs font-black transition-all ${
+                quizTab === 'ia'
+                  ? 'bg-cyan-500/30 text-cyan-300 border border-cyan-400/50'
+                  : 'bg-white/5 text-slate-400 border border-white/10'
+              }`}
+            >
+              Quiz IA 🧠
+            </button>
           </div>
 
-          <h3 className="text-lg sm:text-xl font-black mb-4 sm:mb-6 leading-tight">
-            ¿Qué es una derivada en cálculo?
-          </h3>
+          {quizTab === 'diario' ? (
+            <div className="bg-gradient-to-br from-cyan-500/10 to-blue-600/10 border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 backdrop-blur-xl">
 
-          <div className="space-y-2 sm:space-y-3">
+              <div className="flex justify-between items-center mb-4 sm:mb-6">
 
-            {[
-              'Una operación lineal',
-              'La tasa de cambio de una función',
-              'Un valor constante'
-            ].map((opt, i) => (
+                <span className="bg-orange-500 px-3 py-1 rounded-full text-[10px] sm:text-xs font-black shadow-lg">
+                  +15 XP
+                </span>
 
-              <motion.button
-                key={i}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                className="w-full bg-slate-900/80 hover:bg-cyan-500/20 border border-white/5 rounded-lg sm:rounded-xl p-3 sm:p-4 text-left transition-all backdrop-blur-xl text-xs sm:text-base"
-              >
-                {String.fromCharCode(65 + i)}) {opt}
-              </motion.button>
+                <span className="text-slate-400 text-xs sm:text-sm font-bold">
+                  1/3
+                </span>
 
-            ))}
+              </div>
 
-          </div>
+              <h3 className="text-lg sm:text-xl font-black mb-4 sm:mb-6 leading-tight">
+                ¿Qué es una derivada en cálculo?
+              </h3>
+
+              <div className="space-y-2 sm:space-y-3">
+
+                {[
+                  'Una operación lineal',
+                  'La tasa de cambio de una función',
+                  'Un valor constante'
+                ].map((opt, i) => (
+
+                  <motion.button
+                    key={i}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    className="w-full bg-slate-900/80 hover:bg-cyan-500/20 border border-white/5 rounded-lg sm:rounded-xl p-3 sm:p-4 text-left transition-all backdrop-blur-xl text-xs sm:text-base"
+                  >
+                    {String.fromCharCode(65 + i)}) {opt}
+                  </motion.button>
+
+                ))}
+
+              </div>
+
+            </div>
+          ) : (
+            <AdaptiveQuizEngine cursos={cursos} onEarnXp={ganarXp} />
+          )}
 
         </div>
       )
