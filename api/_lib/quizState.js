@@ -5,7 +5,7 @@
 const preguntasPendientes = new Map() // phone -> { curso, correcta, explicacion, ts }
 const ultimoEnvioAutomatico = new Map() // phone -> timestamp
 
-const RATE_LIMIT_MS = 60 * 60 * 1000 // 1 envío automático por número por hora
+const RATE_LIMIT_MS = 3 * 60 * 1000 // 1 envío por número cada 3 minutos (modo demo)
 
 export function puedeEnviarAutomatico(phone) {
   const ultima = ultimoEnvioAutomatico.get(phone) || 0
