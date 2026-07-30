@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { askAI } from '../services/aiClient'
 
-const SYSTEM_PROMPT = `Eres un tutor académico experto en psicología del aprendizaje. Genera un micro-plan de estudio para HOY de máximo 15 minutos. Sé específico y directo. Solo en español. Formato: título del plan (1 línea) + 3 micro-tareas numeradas + tiempo estimado total.`
+const SYSTEM_PROMPT = `Eres un tutor académico experto en psicología del aprendizaje. Genera un micro-plan de estudio para HOY de máximo 15 minutos. Sé específico y directo. Solo en español. No uses formato Markdown (sin asteriscos ni negritas), solo texto plano. Formato: título del plan (1 línea) + 3 micro-tareas numeradas + tiempo estimado total.`
 
 function construirPrompt({ cursos, diasSinActividad, diasProximoExamen, cursoProximoExamen }) {
   const listaCursos = cursos.map((c) => c.nombre).join(', ')

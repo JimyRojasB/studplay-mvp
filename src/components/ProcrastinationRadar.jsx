@@ -3,9 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { askAI } from '../services/aiClient'
 import { calcularRiesgo } from '../utils/studyMetrics'
 
-const SYSTEM_PROMPT = `Eres un coach de estudio empático pero directo. Escribe UN mensaje de máximo 2 oraciones. Menciona el curso específico en riesgo y propón UNA acción concreta de 5-10 minutos. Tono: amigo cercano. Solo español.`
+const SYSTEM_PROMPT = `Eres un coach de estudio empático pero directo. Escribe UN mensaje de máximo 2 oraciones. Menciona el curso específico en riesgo y propón UNA acción concreta de 5-10 minutos. Tono: amigo cercano. Solo español. No uses formato Markdown (sin asteriscos ni negritas), solo texto plano.`
 
-const QUIZ_SYSTEM_PROMPT = `Eres un profesor universitario peruano experto en evaluación. Genera exactamente 1 pregunta de opción múltiple (A, B, C) sobre el tema indicado, pensada para reforzar en menos de 2 minutos.
+const QUIZ_SYSTEM_PROMPT = `Eres un profesor universitario peruano experto en evaluación. Genera exactamente 1 pregunta de opción múltiple (A, B, C) sobre el tema indicado, pensada para reforzar en menos de 2 minutos. No uses formato Markdown dentro de los textos (sin asteriscos ni negritas).
 Responde ÚNICAMENTE con este JSON válido, sin texto adicional:
 {
   "pregunta": "...",

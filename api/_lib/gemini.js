@@ -12,7 +12,10 @@ export class GeminiProxyError extends Error {
 
 // Proxy server-side hacia Gemini (Google AI Studio): la API key nunca debe
 // llegar al bundle del cliente, por eso vive en process.env.GEMINI_API_KEY.
-export async function callGemini({ systemPrompt, userPrompt, maxTokens = 500 }) {
+// Los modelos Gemini actuales gastan buena parte del presupuesto de tokens
+// en "thinking" interno antes de responder, así que el límite tiene que ser
+// generoso o la respuesta visible sale cortada a media frase.
+export async function callGemini({ systemPrompt, userPrompt, maxTokens = 3000 }) {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) {
     throw new GeminiProxyError(FALLBACK_MESSAGE, 503)

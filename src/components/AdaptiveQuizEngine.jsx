@@ -4,7 +4,7 @@ import { askAI } from '../services/aiClient'
 
 const MAX_CHARS = 2000
 
-const SYSTEM_PROMPT = `Eres un profesor universitario peruano experto en evaluación. Genera exactamente 3 preguntas de opción múltiple (A, B, C) priorizando los conceptos más importantes del texto dado.
+const SYSTEM_PROMPT = `Eres un profesor universitario peruano experto en evaluación. Genera exactamente 3 preguntas de opción múltiple (A, B, C) priorizando los conceptos más importantes del texto dado. No uses formato Markdown dentro de los textos (sin asteriscos ni negritas).
 Responde ÚNICAMENTE con este JSON válido, sin texto adicional:
 {
   "preguntas": [
